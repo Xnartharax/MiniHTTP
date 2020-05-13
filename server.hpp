@@ -11,7 +11,7 @@
 #include <iostream>
 #include "response.hpp"
 #include "request.hpp"
-#include "ressourcmapper.hpp"
+#include "ressourcemapper.hpp"
 #define HTTP_MSIZE 8192
 class HTTPServer{
 	private:

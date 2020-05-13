@@ -47,11 +47,10 @@ int HTTPServer::handle(int sock){
     read(sock, buf, HTTP_MSIZE);
     std::string str(buf);
     Request req = Request(buf);
-    Ressource *rec = mapper->get(req);
-    Response rep = Response(*rec, req);
-    send(sock, rep.sheader.c_str(), rep.sheader.length(), 0);
+    Response *rep = mapper->get(req);
+    send(sock, rep->sheader.c_str(), rep->sheader.length(), 0);
     send(sock, "\r\n", 2, 0);
-    send(sock, rep.content.c_str(), rep.content.length(), 0); 
+    send(sock, rep->content.c_str(), rep->content.length(), 0); 
     close(sock);
     return 0;
 }

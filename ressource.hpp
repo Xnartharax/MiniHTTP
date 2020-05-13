@@ -11,4 +11,8 @@ class Ressource{
         std::string content;
         std::string MIME;
 };
+class MissingRessource: public Ressource{
+    public:
+        MissingRessource();
+};
 #endif

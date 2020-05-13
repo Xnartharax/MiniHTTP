@@ -1,9 +1,14 @@
-#include "ressourcmapper.hpp"
+#include "ressourcemapper.hpp"
 using namespace std;
-Ressource* RessourceMapper::get(const Request &req){
+Response* RessourceMapper::get(const Request &req){
     Ressource *rec = mapping[req.ressource];
-    if (rec != NULL) return rec;
-    else return new Ressource(ressource_path + req.ressource); 
+    struct stat buffer;
+    if (rec != NULL) return new OK(*rec, req);
+    else if (stat((ressource_path + req.ressource).c_str(), &buffer) == 0){
+        Ressource rec(ressource_path + req.ressource);
+        return new OK(rec, req);
+    }
+    else return new NotFound();
 }
 void RessourceMapper::add_mapping(const string &identifier, Ressource * rec){
     mapping[identifier] = rec;
