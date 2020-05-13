@@ -1,8 +1,10 @@
 #include "response.hpp"
-OK::OK(Ressource &arec, const Request &areq): rec(arec), req(areq){
-    content = rec.content;
-    header["Content-Type"] = rec.MIME;
-    header["Content-Length"] = std::to_string(rec.content.length());
+OK::OK(Ressource &arec, const Request &areq){
+    rec = &arec;
+    req = &areq;
+    content = rec->content;
+    header["Content-Type"] = rec->MIME;
+    header["Content-Length"] = std::to_string(rec->content.length());
     status = 200;
     sheader = "HTTP/1.1 200 OK\n";
     stringify_header();

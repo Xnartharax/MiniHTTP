@@ -1,13 +1,16 @@
 #include "request.hpp"
 using namespace std;
 void Request::parse(const string &msg){
-    regex ln_re("\\n");
-    regex ws_re("\\s+"); 
+    typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
+    boost::char_separator<char> ln_sep("\n");
+    boost::char_separator<char> ws_sep(" ");
+    tokenizer ln_tok{msg, ln_sep};
     vector<std::string> lines{
-        sregex_token_iterator(msg.begin(), msg.end(), ln_re, -1), {}
+        ln_tok.begin(), ln_tok.end()
     };
+    tokenizer l0_tok{lines[0], ws_sep};
     vector<string> line_zero{
-        sregex_token_iterator(lines[0].begin(), lines[0].end(), ws_re, -1), {}
+        l0_tok.begin(), l0_tok.end()
     };
     if(line_zero[0].compare("GET") == 0) method = GET;
     else if(line_zero[0].compare("POST") == 0) method = POST;

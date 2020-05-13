@@ -17,8 +17,8 @@ class Response{
 };
 class OK: public Response{
     private:
-        Ressource rec;
-        Request req;
+        Ressource *rec;
+        const Request *req;
     public:
         OK(Ressource &arec,const Request &areq);
 };

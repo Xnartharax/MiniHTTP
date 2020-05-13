@@ -42,7 +42,6 @@ int HTTPServer::mainloop(){
     return 0; 
 }
 int HTTPServer::handle(int sock){
-    printf("%d\n", sock);
     char * buf = new char[HTTP_MSIZE];
     read(sock, buf, HTTP_MSIZE);
     std::string str(buf);
@@ -52,5 +51,7 @@ int HTTPServer::handle(int sock){
     send(sock, "\r\n", 2, 0);
     send(sock, rep->content.c_str(), rep->content.length(), 0); 
     close(sock);
+    delete[] buf;
+    delete rep;
     return 0;
 }
