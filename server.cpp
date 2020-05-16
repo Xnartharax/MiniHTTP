@@ -1,8 +1,18 @@
 #include "server.hpp"
 using namespace std;
-HTTPServer::HTTPServer(int port, const char* ressource_path){
+HTTPServer::HTTPServer(int port, const char* ressource_path,int workers):
+    m_request_workers(),
+    m_MsgQueue(),
+    m_RepQueue(),
+    m_respond_thread(&HTTPServer::responder, this)
+    {
     mapper = new RessourceMapper();
-    mapper->ressource_path.assign(ressource_path);
+    mapper->ressource_path.assign(ressource_path); 
+    for(int i= 0; i < workers; i++){
+            m_request_workers.push_back(new RequestWorker(mapper, &m_MsgQueue,
+                         &m_RepQueue, &m_newMsg, &m_newRep));
+    }
+
     int opt  = 1;
     this->address = new struct sockaddr_in;
     if((this->sockfd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
@@ -37,21 +47,49 @@ HTTPServer::HTTPServer(int port, const char* ressource_path){
 int HTTPServer::mainloop(){
     for(;;){
         int sock = accept(this->sockfd, (struct sockaddr *) this->address, (socklen_t *) &this->addrlen);
-        std::async(&HTTPServer::handle, this, sock);
+        //std::async(&HTTPServer::handle, this, sock);
+        handle(sock);
+    }
+    return 0; 
+}
+int HTTPServer::test_mainloop(){
+    //same but used for profiling testing because it terminates
+    for(int i=0;i < 10000;i++){
+        int sock = accept(this->sockfd, (struct sockaddr *) this->address, (socklen_t *) &this->addrlen);
+        //std::async(&HTTPServer::handle, this, sock);
+        handle(sock);
     }
     return 0; 
 }
 int HTTPServer::handle(int sock){
     char * buf = new char[HTTP_MSIZE];
     read(sock, buf, HTTP_MSIZE);
-    std::string str(buf);
-    Request req = Request(buf);
-    Response *rep = mapper->get(req);
-    send(sock, rep->sheader.c_str(), rep->sheader.length(), 0);
-    send(sock, "\r\n", 2, 0);
-    send(sock, rep->content.c_str(), rep->content.length(), 0); 
-    close(sock);
+    string msg(buf);
+    unique_lock<mutex> l(m_MsgQueue.m_QueueMutex);
+    m_MsgQueue.push(pair<string, int>(msg, sock));
+    m_newMsg.notify_one();
+    //send(sock, rep->sheader.c_str(), rep->sheader.length(), 0);
+    //send(sock, "\r\n", 2, 0);
+    //send(sock, rep->content.c_str(), rep->content.length(), 0); 
+    //close(sock);
     delete[] buf;
-    delete rep;
+    
     return 0;
+}
+int HTTPServer::responder(){
+    finishedResponse * temp = nullptr; 
+    for(;;){
+        unique_lock<mutex> l(m_RepQueue.m_QueueMutex);
+        m_newRep.wait(l);
+        if(m_RepQueue.pop(&temp)){
+            auto rep = std::get<0>(*temp); 
+            auto sock = std::get<1>(*temp);
+            send(sock, rep->sheader.c_str(), rep->sheader.length(), 0);
+            send(sock, "\r\n", 2, 0);
+            send(sock, rep->content.c_str(), rep->content.length(), 0); 
+            close(sock);       
+            delete rep;
+            delete temp;
+        }
+    }
 }

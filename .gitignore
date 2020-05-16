@@ -4,3 +4,6 @@ client.o
 *.o
 *.out
 callgrind.*
+oprofile_data/
+gmon.out
+analysis.txt

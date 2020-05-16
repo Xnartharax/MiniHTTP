@@ -2,6 +2,7 @@
 #define RESSOURCEMAPPER_HPP
 #include <string>
 #include <map>
+#include <mutex>
 #include "ressource.hpp"
 #include "request.hpp"
 #include "response.hpp"
@@ -12,5 +13,6 @@ class RessourceMapper{
         void add_mapping(const std::string &identifier, Ressource *rec);
     private:
         std::map<std::string, Ressource*> mapping;
+        std::mutex mtx;
 };
 #endif
