@@ -34,6 +34,6 @@ class HTTPServer{
 	public:
 		HTTPServer(int port, const char * ressource_path, int workers);
 		int mainloop();
-        int test_mainloop();
+        int test_mainloop(int n_request);
 };
 #endif

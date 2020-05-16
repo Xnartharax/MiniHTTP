@@ -21,6 +21,7 @@ class RequestWorker{
         RequestWorker(RessourceMapper *t_mapper,
          MessageQueue *t_queue, ResponseQueue *t_finshed,
          std::condition_variable *t_newMsg,std::condition_variable * t_newRep);
+        ~RequestWorker();
         
 };
 

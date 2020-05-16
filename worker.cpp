@@ -24,3 +24,6 @@ void RequestWorker::handler(){
         }
     }
 }
+RequestWorker::~RequestWorker(){
+   m_t.join();
+}

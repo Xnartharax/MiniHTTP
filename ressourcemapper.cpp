@@ -8,8 +8,9 @@ Response* RessourceMapper::get(const Request &req){
     struct stat buffer;
     if (rec != NULL) return new OK(*rec, req);
     else if (stat((ressource_path + req.ressource).c_str(), &buffer) == 0){
-        Ressource rec(ressource_path + req.ressource);
-        return new OK(rec, req);
+        Ressource *rec= new Ressource(ressource_path + req.ressource);
+        add_mapping(req.ressource, rec);
+        return new OK(*rec, req);
     }
     else return new NotFound();
 }

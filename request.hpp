@@ -2,7 +2,8 @@
 #define REQUEST_HPP
 #include <string>
 #include <regex>
-#include "boost/tokenizer.hpp"
+#include <boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
 enum METHODS {
     GET = 1,
     POST = 2
