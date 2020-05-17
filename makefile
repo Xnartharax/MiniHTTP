@@ -1,5 +1,5 @@
 CC = g++
-STD = c++14
+STD = c++17
 FLAGS = -O3 -pg -Wall 
 INCLUDE = /usr/local/etc/boost_1_73_0/boost
 SRC = ./
@@ -11,4 +11,10 @@ server: $(OBJECTS)
 	$(CC) $^ -c $(FLAGS) -I $(INCLUDE) --std=$(STD) $(LIBS) -o $@
 clean:
 	rm $(OBJECTS)
+install:
+	cp mini-http.service.template /etc/systemd/system/mini-http.service 
+	make server
+	mkdir /etc/minihttp/
+	mv ./HTTP /etc/minihttp/HTTP
+	mkdir /etc/minihttp/htdocs
 	

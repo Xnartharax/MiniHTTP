@@ -1,5 +1,5 @@
 #include "server.hpp"
 int main(){
-    HTTPServer * server = new HTTPServer(8080, "./test", 5);
-    server->test_mainloop(10000);
+    HTTPServer * server = new HTTPServer(8080, "/etc/minihttp/htdocs", 5);
+    server->mainloop();
 }
