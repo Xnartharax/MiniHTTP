@@ -5,14 +5,13 @@
 #include <fstream>
 #include <streambuf>
 #include <sstream>
+#include "response.hpp"
 class Ressource{
     public:
         Ressource(const std::string &path);
         std::string content;
         std::string MIME;
+        Response * buildResp();
 };
-class MissingRessource: public Ressource{
-    public:
-        MissingRessource();
-};
+
 #endif

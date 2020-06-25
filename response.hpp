@@ -4,7 +4,7 @@
 #include <sys/stat.h>
 #include <string>
 
-#include "ressource.hpp"
+
 #include "request.hpp"
 class Response{
     public:
@@ -16,11 +16,8 @@ class Response{
         
 };
 class OK: public Response{
-    private:
-        Ressource *rec;
-        const Request *req;
     public:
-        OK(Ressource &arec,const Request &areq);
+        OK(std::string&, std::map<std::string, std::string>&);
 };
 
 class NotFound: public Response{

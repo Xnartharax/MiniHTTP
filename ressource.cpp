@@ -8,3 +8,9 @@ Ressource::Ressource(const std::string &path){
 
     content.assign(str);
 }
+Response * Ressource::buildResp(){
+    auto header = std::map<std::string, std::string>();
+    header["Content-Type"] = MIME;
+    return new OK(content, header);
+}
+
