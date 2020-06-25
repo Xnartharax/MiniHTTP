@@ -1,5 +1,6 @@
 #include "server.hpp"
 using namespace std;
+
 HTTPServer::HTTPServer(int port, const char* ressource_path,int workers):
     m_request_workers(),
     m_MsgQueue(),
@@ -81,7 +82,7 @@ int HTTPServer::responder(){
     finishedResponse * temp = nullptr; 
     for(;;){
         unique_lock<mutex> l(m_RepQueue.m_QueueMutex);
-        m_newRep.wait(l);
+        m_newRep.wait(l, [this](){return !m_RepQueue.empty();});
         if(m_RepQueue.pop(&temp)){
             auto rep = std::get<0>(*temp); 
             auto sock = std::get<1>(*temp);

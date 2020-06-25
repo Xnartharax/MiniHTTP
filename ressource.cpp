@@ -2,9 +2,9 @@
 
 using namespace std;
 Ressource::Ressource(const std::string &path){
-    fstream file(path);
-    stringstream temp;
-    temp << file.rdbuf();
-    content.assign(temp.str());
-    MIME = "text/html";
+    ifstream file(path);
+    std::string str((std::istreambuf_iterator<char>(file)),
+                 std::istreambuf_iterator<char>());
+
+    content.assign(str);
 }

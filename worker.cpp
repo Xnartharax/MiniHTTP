@@ -13,7 +13,7 @@ void RequestWorker::handler(){
     message *task = nullptr;
     for(;;){
         std::unique_lock<std::mutex> l(MsgQueue->m_QueueMutex);
-        m_newMsg->wait(l);
+        m_newMsg->wait(l, [this](){return !MsgQueue->empty();});
         if(MsgQueue->pop(&task)){ 
             Request req = Request(std::get<0>(*task));
             Response *rep = m_mapper->get(req);
