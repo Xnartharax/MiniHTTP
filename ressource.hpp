@@ -11,7 +11,7 @@ class Ressource{
         Ressource(const std::string &path);
         std::string content;
         std::string MIME;
-        Response * buildResp();
+        virtual Response * buildResp();
 };
 
 #endif

@@ -4,16 +4,20 @@
 #include <regex>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
+
 enum METHODS {
     GET = 1,
     POST = 2
 };
+
 class Request {
     public:
         int method;
         std::string ressource;
+        std::map<std::string, std::string> header;
+        std::string body;
         void parse(const std::string &msg);
         Request();
-        Request(const std::string &msg);
+        Request(const std::string &msg, int socky);
 };
 #endif

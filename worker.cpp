@@ -15,7 +15,7 @@ void RequestWorker::handler(){
         std::unique_lock<std::mutex> l(MsgQueue->m_QueueMutex);
         m_newMsg->wait(l, [this](){return !MsgQueue->empty();});
         if(MsgQueue->pop(&task)){ 
-            Request req = Request(std::get<0>(*task));
+            Request req = Request(std::get<0>(*task), std::get<1>(*task));
             Response *rep = m_mapper->get(req);
             std::unique_lock<std::mutex> l(RepFinished->m_QueueMutex);
             RepFinished->push(std::make_pair(rep, std::get<1>(*task)));
