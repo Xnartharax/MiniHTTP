@@ -3,6 +3,7 @@
 #include <queue>
 #include <mutex>
 #include "response.hpp"
+#include "socket.hpp"
 //a thread-safe queue for messages to handle
 template <typename T>
 class ThreadsafeQueue{
@@ -28,8 +29,8 @@ class ThreadsafeQueue{
         }
         
 };
-typedef std::pair<std::string, int> message;//first message string then socket
-typedef std::pair<Response *, int> finishedResponse;
+typedef std::pair<std::string, Socket*> message;//first message string then socket
+typedef std::pair<Response *, Socket*> finishedResponse;
 typedef ThreadsafeQueue<message> MessageQueue;
 typedef ThreadsafeQueue<finishedResponse> ResponseQueue;
 #endif

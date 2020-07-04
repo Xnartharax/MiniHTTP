@@ -1,13 +1,35 @@
 #include "server.hpp"
 using namespace std;
-
+std::string read_header(int sock){
+    std::string msg;
+    char buf;
+    bool cr = false;
+    while(read(sock, &buf, 1)){
+        if(buf == '\n');
+        else if(buf == '\r') {
+            if (cr) {
+                msg += buf;
+                read(sock, &buf, 1);
+                msg += buf; // consuming the last \r\n
+                break;
+            }
+            cr = true;
+        }
+        else {
+            cr = false;
+        }
+        
+        msg += buf;
+        
+    }
+    return msg;
+}
 HTTPServer::HTTPServer(int port, const char* ressource_path,int workers):
     m_request_workers(),
     m_MsgQueue(),
     m_RepQueue()
     {
-    mapper = new RessourceMapper();
-    mapper->ressource_path.assign(ressource_path); 
+    mapper = new RessourceMapper(ressource_path);
     unique_lock<mutex> lRep(m_RepQueue.m_QueueMutex);
     for(int i= 0; i < workers; i++){
             m_request_workers.push_back(new RequestWorker(mapper, &m_MsgQueue,
@@ -63,19 +85,17 @@ int HTTPServer::test_mainloop(int n_request){
     }
     return 0; 
 }
+
 int HTTPServer::handle(int sock){
-    char * buf = new char[HTTP_MSIZE];
-    read(sock, buf, HTTP_MSIZE);
-    string msg = string(buf);
     unique_lock<mutex> l(m_MsgQueue.m_QueueMutex);
-    m_MsgQueue.push(pair<string, int>(msg, sock));
+    Socket * socket = new Socket(sock);
+    string msg = socket->read_header();
+    m_MsgQueue.push(pair<string, Socket*>(msg, socket));
     m_newMsg.notify_one();
     //send(sock, rep->sheader.c_str(), rep->sheader.length(), 0);
     //send(sock, "\r\n", 2, 0);
     //send(sock, rep->content.c_str(), rep->content.length(), 0); 
     //close(sock);
-    delete[] buf;
-    
     return 0;
 }
 int HTTPServer::responder(){
@@ -86,10 +106,10 @@ int HTTPServer::responder(){
         if(m_RepQueue.pop(&temp)){
             auto rep = std::get<0>(*temp); 
             auto sock = std::get<1>(*temp);
-            send(sock, rep->sheader.c_str(), rep->sheader.length(), 0);
-            send(sock, "\r\n", 2, 0);
-            send(sock, rep->content.c_str(), rep->content.length(), 0); 
-            close(sock);       
+            sock->sock_send(rep->sheader.c_str(), rep->sheader.length());
+            sock->sock_send("\r\n", 2);
+            sock->sock_send(rep->content.c_str(), rep->content.length()); 
+            delete sock;
             delete rep;
             delete temp;
         }

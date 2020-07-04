@@ -12,6 +12,7 @@ class RessourceMapper{
         Response* get(const Request &req);   
         std::string ressource_path;
         void add_mapping(const std::string &identifier, Ressource *rec);
+        RessourceMapper(std::string);
     private:
         std::map<std::string, Ressource*> mapping;
         std::mutex mtx;

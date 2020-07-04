@@ -18,3 +18,13 @@ void RessourceMapper::add_mapping(const string &identifier, Ressource * rec){
     lock_guard<mutex> l(mtx);
     mapping[identifier] = rec;
 }
+RessourceMapper::RessourceMapper(std::string ressourcepath){
+    ressource_path = ressourcepath;
+    std::filesystem::path indexpath(ressource_path + "/index.html");
+    if(std::filesystem::is_regular_file(indexpath) || filesystem::is_symlink(indexpath)){
+        Ressource *index = new Ressource(ressource_path + "/index.html");
+        add_mapping("/", index);
+        add_mapping("/index.html", index);
+    
+    }
+}

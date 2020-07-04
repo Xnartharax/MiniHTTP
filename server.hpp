@@ -15,6 +15,7 @@
 #include "ressourcemapper.hpp"
 #include "worker.hpp"
 #include "queues.hpp"
+#include "socket.hpp"
 #define HTTP_MSIZE 8192
 
 class HTTPServer{

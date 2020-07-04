@@ -2,8 +2,9 @@
 #define REQUEST_HPP
 #include <string>
 #include <regex>
-#include <boost/tokenizer.hpp>
+#include <sstream>
 #include <boost/algorithm/string.hpp>
+#include "socket.hpp"
 
 enum METHODS {
     GET = 1,
@@ -18,6 +19,6 @@ class Request {
         std::string body;
         void parse(const std::string &msg);
         Request();
-        Request(const std::string &msg, int socky);
+        Request(const std::string &msg, Socket * sock);
 };
 #endif
