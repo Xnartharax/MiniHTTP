@@ -18,7 +18,11 @@ class Request {
         std::map<std::string, std::string> header;
         std::string body;
         void parse(const std::string &msg);
+        Request(const Request&);
         Request();
         Request(const std::string &msg, Socket * sock);
 };
+inline bool operator<(const Request& lreq, const Request& rreq){
+    return lreq.ressource < rreq.ressource;
+}
 #endif

@@ -3,8 +3,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <string>
-
-
 #include "request.hpp"
 class Response{
     public:
@@ -24,5 +22,9 @@ class NotFound: public Response{
     public:
         NotFound();
 
+};
+class BadRequest: public Response{
+    public:
+        BadRequest();
 };
 #endif

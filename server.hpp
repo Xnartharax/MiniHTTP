@@ -20,11 +20,8 @@
 
 class HTTPServer{
 	private:
-		int sockfd;
-        struct sockaddr_in *address;
-        int addrlen;
-        int handle(int socket);
-        RessourceMapper *mapper;
+        TLSHandlerSock mastersock;
+        int handle(Socket *socket);
         std::vector<RequestWorker*> m_request_workers;
         MessageQueue m_MsgQueue;
         ResponseQueue m_RepQueue;
@@ -33,7 +30,9 @@ class HTTPServer{
         std::condition_variable m_newMsg;
         std::condition_variable  m_newRep;
 	public:
-		HTTPServer(int port, const char * ressource_path, int workers);
+		HTTPServer(int port, const char * ressource_path, int workers, 
+                std::string certpath, std::string keypath);
+        RessourceMapper *mapper;
 		int mainloop();
         int test_mainloop(int n_request);
 };

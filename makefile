@@ -1,9 +1,9 @@
 CC = g++
 STD = c++17
-FLAGS = -O3 -g -Wall 
+FLAGS = -O2 -g -Wall 
 INCLUDE = /usr/local/etc/boost_1_73_0/
 SRC = ./
-LIBS = -lpthread -lstdc++fs
+LIBS = -lpthread -lstdc++fs -lssl
 OBJECTS = socket.o worker.o response.o ressource.o ressourcemapper.o request.o server.o main.o
 server: $(OBJECTS)
 	g++ $(OBJECTS) -I $(INCLUDE) -o HTTP $(FLAGS) --std=$(STD) $(LIBS)

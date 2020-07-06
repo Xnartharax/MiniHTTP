@@ -9,12 +9,14 @@
 #include "response.hpp"
 class RessourceMapper{
     public:
-        Response* get(const Request &req);   
+        Response* get(Request &req);   
         std::string ressource_path;
         void add_mapping(const std::string &identifier, Ressource *rec);
         RessourceMapper(std::string);
     private:
-        std::map<std::string, Ressource*> mapping;
+        std::map<std::string, Ressource*> rec_mapping;
+        std::map<Request, Response*> cache;
         std::mutex mtx;
+        std::mutex cmtx;
 };
 #endif

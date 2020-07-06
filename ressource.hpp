@@ -6,12 +6,23 @@
 #include <streambuf>
 #include <sstream>
 #include "response.hpp"
-class Ressource{
+#include "request.hpp"
+class Ressource {
+   public: 
+        bool cacheable;
+        virtual Response * buildResp( Request& req) = 0;
+};
+class StaticRessource: public Ressource{
     public:
-        Ressource(const std::string &path);
+        StaticRessource(const std::string &path);
         std::string content;
         std::string MIME;
-        virtual Response * buildResp();
+        Response * buildResp(Request& req);
+};
+class EchoRessource: public Ressource{
+    public:
+        EchoRessource();
+        Response * buildResp(Request& req);
 };
 
 #endif

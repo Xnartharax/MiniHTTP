@@ -32,8 +32,16 @@ Request::Request(const string &msg, Socket *sock){
     parse(msg);
     if (method == POST){
         try{
-            body.assign(sock->read_body(std::stoi(header["Content-Length"]))); 
+            body.assign(sock->read_body(4));
+            //body.assign(sock->read_body(std::stoi(header["Content-Length"]))); 
         }
         catch(std::invalid_argument& e){}
     }
+}
+
+Request::Request(const Request& other){
+    method = other.method;
+    header = other.header;
+    body = other.body;
+    ressource = other.ressource;
 }
