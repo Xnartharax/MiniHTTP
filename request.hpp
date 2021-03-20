@@ -14,6 +14,7 @@ enum METHODS {
 class Request {
     public:
         int method;
+        std::string protocol;
         std::string ressource;
         std::map<std::string, std::string> header;
         std::string body;

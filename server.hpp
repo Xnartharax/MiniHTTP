@@ -20,13 +20,15 @@
 
 class HTTPServer{
 	private:
-        TLSHandlerSock mastersock;
-        int handle(Socket *socket);
+        TLSHandlerSock sslmastersock;
+        HandlerSock mastersock;
+        int handle(Socket *);
         std::vector<RequestWorker*> m_request_workers;
         MessageQueue m_MsgQueue;
         ResponseQueue m_RepQueue;
         std::thread m_respond_thread;
         int responder();
+        SocketMultiplexer multiplexer; 
         std::condition_variable m_newMsg;
         std::condition_variable  m_newRep;
 	public:
