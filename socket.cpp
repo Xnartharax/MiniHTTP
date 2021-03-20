@@ -1,16 +1,25 @@
 #include "socket.hpp"
 
 Socket::Socket(int _sock){
+    invalid = false;
+    timeout = time(nullptr) + 150;
     sock = _sock;
     current = buffer;
 }
 
-void Socket::read_buffer(){
-    read(sock, buffer, SOCKET_BUFFER_SIZE);
+bool Socket::read_buffer(){
+    std::lock_guard<std::mutex> l{mtx};
+    int length = read(sock, buffer, SOCKET_BUFFER_SIZE);
+    if(length <= 0) {
+        invalid = true;
+        memset(buffer, 0, SOCKET_BUFFER_SIZE);
+        return false;
+    }
     current = buffer;
+    return true;
 }
 std::string Socket::read_header(){
-    read_buffer();
+    if(!read_buffer()) return "";
     std::string msg;
     bool cr = false;
     while(!(cr && *current == '\r')){
@@ -41,27 +50,38 @@ char * Socket::read_body(int length){
     return body;
 }
 void Socket::sock_send(const char * msg, int len){
-    send(sock, msg, len, 0);
+    std::lock_guard<std::mutex> l{mtx};
+    if(0>send(sock, msg, len, 0)) invalid = true;
 }
 Socket::~Socket(){
+    std::lock_guard<std::mutex> lmtx{mtx};
     close(sock);
 }
 TLSSocket::TLSSocket(int sock, SSL_CTX *ctx): Socket(sock){
+    timeout = time(nullptr) + 150;
     ssl = SSL_new(ctx); 
     SSL_set_fd(ssl, sock);
     SSL_accept(ssl);
 }
-void TLSSocket::read_buffer(){
-    SSL_read(ssl, buffer, SOCKET_BUFFER_SIZE);
+bool TLSSocket::read_buffer(){
+    std::lock_guard<std::mutex> l{mtx};
+    if(0>=SSL_read(ssl, buffer, SOCKET_BUFFER_SIZE)){ 
+        invalid = true;
+        memset(buffer, 0, SOCKET_BUFFER_SIZE);
+        return false;
+    }
     current = buffer;
-
+    return true;
 }
 void TLSSocket::sock_send(const char * msg, int len){
-   SSL_write(ssl, msg, len);
+    std::lock_guard<std::mutex> l{mtx};
+    if(0>SSL_write(ssl, msg, len)) invalid = true;
 }
 TLSSocket::~TLSSocket(){
+    std::lock_guard<std::mutex> lmtx{mtx};
     SSL_shutdown(ssl);
     SSL_free(ssl);
+    close(sock);
 }
 HandlerSock::HandlerSock(int port){
     this->port = port;
@@ -129,3 +149,63 @@ TLSSocket * TLSHandlerSock::accept(){
     return new TLSSocket(client, ctx);
 
 }
+void SocketMultiplexer::addMasterSock(HandlerSock * sock){
+    std::lock_guard<std::mutex> lock(mtx);
+    pollfd newfd;
+    newfd.fd = sock->sock; 
+    newfd.events = POLLIN;
+    fds.push_back(newfd);
+    mastersocks[sock->sock] = sock;
+}
+void SocketMultiplexer::addSock(Socket * sock){
+    std::lock_guard<std::mutex> lock(mtx);
+    if (socks[sock->sock] == nullptr){
+        pollfd newfd;
+        newfd.fd = sock->sock; 
+        newfd.events = POLLIN;
+        fds.push_back(newfd);
+        socks[sock->sock] = sock;
+    }
+}
+Socket * SocketMultiplexer::getNextSock(){
+    std::lock_guard<std::mutex> lock(mtx);
+    handleTimeouts();  
+    int nfds = poll(fds.data(), fds.size(), 500);
+    while(nfds <= 0){
+        handleTimeouts();  
+        nfds = poll(fds.data(), fds.size(), 500);
+    }
+    for (auto pfd : fds){
+        if(pfd.revents & POLLIN){
+            auto sock = socks[pfd.fd];
+            if (sock != nullptr && !sock->invalid) {
+                return sock;
+            }
+            else{
+                auto master = mastersocks[pfd.fd];
+                if (master != nullptr)
+                    return master->accept();
+            }
+        
+        }
+    }
+    return nullptr;
+}
+
+void SocketMultiplexer::handleTimeouts(){
+    std::time_t now = time(nullptr);
+    for(auto const & tmp : socks){
+        auto val = std::get<1>(tmp);
+        auto key = std::get<0>(tmp);
+        if (val == nullptr) continue; //look-ups apperently insert a null pointer
+        if ((val->timeout < now || val->invalid)&& val->rc == 0){
+            auto it = std::find_if(fds.begin(), fds.end(),
+                 [key](auto pfd){return pfd.fd==key;});  
+            fds.erase(it);
+            socks.erase(key);
+            break; // break the loop dont modify while iterating 
+            // sockets have to be removed one at a time
+        }
+    } 
+}
+

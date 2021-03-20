@@ -4,7 +4,7 @@ OK::OK(std::string& t_content, std::map<std::string, std::string>& t_header){
     header = t_header;
     header["Content-Length"] = std::to_string(content.length());
     status = 200;
-    sheader = "HTTP/1.1 200 OK\n";
+    sheader = "HTTP/1.1 200 OK\r\n";
     stringify_header();
 }
 void Response::stringify_header(){
@@ -17,7 +17,7 @@ void Response::stringify_header(){
 }
 NotFound::NotFound() {
     status = 404;
-    sheader = "HTTP/1.1 404 Not Found";
+    sheader = "HTTP/1.1 404 Not Found\r\n";
     content = "<HTML><title>Not Found</title><body><h1>404 Requested Ressource could not be found</h1></body></HTML>";
     header["Content-Type"] = "text/html"; 
     header["Content-Length"] = std::to_string(content.length());
@@ -25,7 +25,7 @@ NotFound::NotFound() {
 }
 BadRequest::BadRequest() {
     status = 400;
-    sheader = "HTTP/1.1 400 Bad Request";
+    sheader = "HTTP/1.1 400 Bad Request\r\n";
     content = "<HTML><title>Bad Request</title><body><h1>The Request is ill formatted or unsuited in this case</h1></body></HTML>";
     header["Content-Type"] = "text/html"; 
     header["Content-Length"] = std::to_string(content.length());

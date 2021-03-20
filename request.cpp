@@ -9,9 +9,12 @@ void Request::parse(const string &msg){
     getline(strm, firstline);
     std::string method_;
     std::istringstream l0(firstline);
+    
 
     getline(l0, method_, ' ');
     getline(l0, ressource, ' ');
+    getline(l0, protocol, ' ');
+    protocol.pop_back(); // getting rid of the \r
     if (method_ == "GET") method = GET;
     if (method_ == "POST") method = POST;
  
@@ -28,14 +31,18 @@ void Request::parse(const string &msg){
     }
     
 }
-Request::Request(const string &msg, Socket *sock){
+Request::Request(const string &msg, Socket * sock){
     parse(msg);
+    std::lock_guard<std::mutex> l{sock->mtx};
     if (method == POST){
         try{
             body.assign(sock->read_body(4));
             //body.assign(sock->read_body(std::stoi(header["Content-Length"]))); 
         }
         catch(std::invalid_argument& e){}
+    }
+    if (header["Connection"] == "keep-alive" || protocol != "HTTP/1.0"){
+        sock->keepalive = true;
     }
 }
 

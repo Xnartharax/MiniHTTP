@@ -14,7 +14,7 @@ void RequestWorker::handler(){
     for(;;){
         std::unique_lock<std::mutex> l(MsgQueue->m_QueueMutex);
         m_newMsg->wait(l, [this](){return !MsgQueue->empty();});
-        if(MsgQueue->pop(&task)){ 
+        if(MsgQueue->pop(&task)&& !std::get<1>(*task)->invalid){ 
             Request req = Request(std::get<0>(*task), std::get<1>(*task));
             Response *rep = m_mapper->get(req);
             std::unique_lock<std::mutex> l(RepFinished->m_QueueMutex);
@@ -22,6 +22,7 @@ void RequestWorker::handler(){
             m_newRep->notify_one();
             delete task;
         }
+        else std::get<1>(*task)->rc--;
     }
 }
 RequestWorker::~RequestWorker(){
